@@ -26,9 +26,19 @@ class GameMap {
         const y = getRandomInt(0, MAP_HEIGHT - 1);
 
         const rand = Math.random();
-        let type = RESOURCE_TYPES.FOOD;
-        if (rand > 0.9) type = RESOURCE_TYPES.CITY;
-        else if (rand > 0.8) type = RESOURCE_TYPES.AMMO;
+        let type;
+
+        if (rand > 0.92) {
+            type = RESOURCE_TYPES.CITY; // 8% 重要城市
+        } else if (rand > 0.82) {
+            type = RESOURCE_TYPES.RESOURCE; // 10% 矿产
+        } else if (rand > 0.67) {
+            type = RESOURCE_TYPES.RAILWAY; // 15% 铁路
+        } else if (rand > 0.45) {
+            type = RESOURCE_TYPES.INDUSTRY; // 22% 工业
+        } else {
+            type = RESOURCE_TYPES.GRAIN; // 45% 粮食
+        }
 
         this.resources.push({ x, y, type });
     }
@@ -54,8 +64,14 @@ class GameMap {
 
         // Draw resources
         this.resources.forEach(res => {
-            this.ctx.fillStyle = res.type.color;
-            this.ctx.fillRect(res.x * TILE_SIZE, res.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            this.ctx.font = `${TILE_SIZE - 2}px Arial`;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(
+                res.type.emoji,
+                res.x * TILE_SIZE + TILE_SIZE / 2,
+                res.y * TILE_SIZE + TILE_SIZE / 2
+            );
         });
     }
 

@@ -41,9 +41,36 @@ const FACTIONS = {
 };
 
 const RESOURCE_TYPES = {
-    FOOD: { color: '#00FF00', value: 1 },
-    AMMO: { color: '#FF0000', value: 0 }, // Used for combat buff?
-    CITY: { color: '#FFFF00', value: 5 }
+    GRAIN: {
+        emoji: '🌾',
+        value: 1,
+        name: '糧食',
+        effect: 'grow'
+    },
+    INDUSTRY: {
+        emoji: '⚙️',
+        value: 2,
+        name: '工業',
+        effect: 'grow'
+    },
+    CITY: {
+        emoji: '🏛️',
+        value: 5,
+        name: '重要城市',
+        effect: 'grow'
+    },
+    RESOURCE: {
+        emoji: '💎',
+        value: 3,
+        name: '礦產',
+        effect: 'grow'
+    },
+    RAILWAY: {
+        emoji: '🚂',
+        value: 2,
+        name: '鐵路',
+        effect: 'speed'
+    }
 };
 
 const DIRECTIONS = {

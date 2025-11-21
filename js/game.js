@@ -2,8 +2,13 @@ class Game {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = CANVAS_WIDTH;
-        this.canvas.height = CANVAS_HEIGHT;
+
+        // 检测是否为手机并自动调整尺寸
+        this.setupCanvas();
+        window.addEventListener('resize', () => this.setupCanvas());
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.setupCanvas(), 100);
+        });
 
         this.map = new GameMap(this.ctx);
         this.snakes = [];
@@ -18,6 +23,24 @@ class Game {
         this.lastTimerUpdate = 0;
 
         this.bindEvents();
+    }
+
+    setupCanvas() {
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile && window.matchMedia("(orientation: landscape)").matches) {
+            // 手机横屏模式 - 使用视口尺寸
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+            this.canvas.style.width = window.innerWidth + 'px';
+            this.canvas.style.height = window.innerHeight + 'px';
+        } else if (!isMobile) {
+            // 桌面模式 - 使用固定尺寸
+            this.canvas.width = CANVAS_WIDTH;
+            this.canvas.height = CANVAS_HEIGHT;
+            this.canvas.style.width = CANVAS_WIDTH + 'px';
+            this.canvas.style.height = CANVAS_HEIGHT + 'px';
+        }
     }
 
     bindEvents() {
@@ -103,7 +126,7 @@ class Game {
 
         setInterval(() => {
             if (this.isRunning) this.map.spawnResource();
-        }, 2000);
+        }, 1000); // 每1秒生成一个资源
     }
 
     loop(currentTime) {
