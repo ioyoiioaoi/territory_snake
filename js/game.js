@@ -266,18 +266,17 @@ class Game {
     timeUp() {
         this.isRunning = false;
 
-        // Determine winner by territory
-        const scores = [
-            { faction: FACTIONS.MANCHUKUO, score: this.map.getTerritoryCount(FACTIONS.MANCHUKUO.id) },
-            { faction: FACTIONS.ROC, score: this.map.getTerritoryCount(FACTIONS.ROC.id) },
-            { faction: FACTIONS.JAPAN, score: this.map.getTerritoryCount(FACTIONS.JAPAN.id) }
-        ];
+        // Determine winner by territory using actual snakes
+        const scores = this.snakes.map(snake => ({
+            snake: snake,
+            score: this.map.getTerritoryCount(snake.faction.id)
+        }));
 
         scores.sort((a, b) => b.score - a.score);
-        const winner = scores[0].faction;
+        const winner = scores[0].snake;
 
         document.getElementById('game-over-screen').classList.remove('hidden');
-        document.getElementById('winner-text').innerText = `時間到！${winner.name} 勝利！`;
+        document.getElementById('winner-text').innerText = `時間到！${winner.faction.name} 勝利！`;
     }
 
     gameOver(win) {

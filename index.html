@@ -23,25 +23,26 @@
         </div>
     </div>
 
+    <!-- Floating HUD outside game container -->
+    <div id="hud">
+        <div id="timer" style="color: white; font-size: 1.2em; margin-bottom: 10px;">時間: 1:00</div>
+        <div class="faction-score" id="score-manchukuo" style="color: #FFD700">
+            <img src="PIC/滿州國.png" class="flag-icon" alt="滿洲國">
+            滿洲國: 0
+        </div>
+        <div class="faction-score" id="score-roc" style="color: #4169E1">
+            <img src="PIC/中華民國.png" class="flag-icon" alt="中華民國">
+            中華民國: 0
+        </div>
+        <div class="faction-score" id="score-japan" style="color: #DC143C">
+            <img src="PIC/日本.png" class="flag-icon" alt="日本">
+            日本: 0
+        </div>
+    </div>
+
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div id="ui-layer">
-            <div id="hud">
-                <div id="timer" style="color: white; font-size: 1.2em; margin-bottom: 10px;">時間: 1:00</div>
-                <div class="faction-score" id="score-manchukuo" style="color: #FFD700">
-                    <img src="PIC/滿州國.png" class="flag-icon" alt="滿洲國">
-                    滿洲國: 0
-                </div>
-                <div class="faction-score" id="score-roc" style="color: #4169E1">
-                    <img src="PIC/中華民國.png" class="flag-icon" alt="中華民國">
-                    中華民國: 0
-                </div>
-                <div class="faction-score" id="score-japan" style="color: #DC143C">
-                    <img src="PIC/日本.png" class="flag-icon" alt="日本">
-                    日本: 0
-                </div>
-            </div>
-
             <div id="start-screen">
                 <h1>滿洲國領土蛇戰</h1>
                 <p>選擇你的陣營</p>
