@@ -20,31 +20,9 @@ class Game {
         // Game timer (1 minute = 60 seconds)
         this.gameTimeLimit = 60;
         this.gameTimeRemaining = 60;
-        this.lastTimerUpdate = 0;
 
-        this.bindEvents();
-    }
-
-    setupCanvas() {
-        const isMobile = window.innerWidth <= 768;
-
-        if (isMobile && window.matchMedia("(orientation: landscape)").matches) {
-            // 手机横屏模式 - 使用视口尺寸
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-            this.canvas.style.width = window.innerWidth + 'px';
-            this.canvas.style.height = window.innerHeight + 'px';
-        } else if (!isMobile) {
-            // 桌面模式 - 使用固定尺寸
-            this.canvas.width = CANVAS_WIDTH;
-            this.canvas.height = CANVAS_HEIGHT;
-            this.canvas.style.width = CANVAS_WIDTH + 'px';
-            this.canvas.style.height = CANVAS_HEIGHT + 'px';
-        }
-    }
-
-    bindEvents() {
-        document.addEventListener('keydown', (e) => {
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
             if (!this.playerSnake || !this.isRunning) return;
 
             switch (e.key) {
@@ -95,6 +73,37 @@ class Game {
         addControl(btnLeft, DIRECTIONS.LEFT);
         addControl(btnRight, DIRECTIONS.RIGHT);
     }
+
+    setupCanvas() {
+        const isMobile = window.innerWidth <= 768;
+        const rotateMessage = document.getElementById('rotate-message');
+        const gameContainer = document.getElementById('game-container');
+
+        if (isMobile) {
+            const isPortrait = window.innerHeight > window.innerWidth;
+
+            if (isPortrait) {
+                // Show rotation message in portrait mode
+                if (rotateMessage) rotateMessage.style.display = 'flex';
+                if (gameContainer) gameContainer.style.display = 'none';
+            } else {
+                // Hide rotation message in landscape mode
+                if (rotateMessage) rotateMessage.style.display = 'none';
+                if (gameContainer) gameContainer.style.display = 'block';
+
+                // Set canvas size for mobile landscape
+                this.canvas.width = CANVAS_WIDTH;
+                this.canvas.height = CANVAS_HEIGHT;
+            }
+        } else {
+            // Desktop - always show game, hide rotation message
+            if (rotateMessage) rotateMessage.style.display = 'none';
+            if (gameContainer) gameContainer.style.display = 'block';
+            this.canvas.width = CANVAS_WIDTH;
+            this.canvas.height = CANVAS_HEIGHT;
+        }
+    }
+
 
     start(playerFactionKey) {
         this.snakes = [];
