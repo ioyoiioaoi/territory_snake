@@ -1,0 +1,281 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+body {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#rotate-message {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.rotate-content {
+    text-align: center;
+    color: white;
+    padding: 30px;
+}
+
+.rotate-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: rotate-anim 2s infinite ease-in-out;
+}
+
+@keyframes rotate-anim {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(90deg);
+    }
+}
+
+.rotate-content h2 {
+    font-size: 2em;
+    margin-bottom: 15px;
+    color: #FFD700;
+}
+
+.rotate-content p {
+    font-size: 1.2em;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+#game-container {
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
+canvas {
+    background-image: url('../images/china_map.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: block;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(30, 30, 30, 0.9) 100%);
+    padding: 15px 20px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    color: white;
+}
+
+.faction-score {
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+}
+
+#start-screen,
+#game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 30, 48, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    pointer-events: auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+h1 {
+    font-size: 3.5em;
+    margin-bottom: 30px;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 3px 3px 10px rgba(0, 0, 0, 0.8);
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.flag-icon {
+    width: 20px;
+    height: 15px;
+    margin-right: 5px;
+    vertical-align: middle;
+    object-fit: contain;
+}
+
+.flag-button {
+    width: 40px;
+    height: 30px;
+    margin-right: 10px;
+    vertical-align: middle;
+    object-fit: contain;
+}
+
+.faction-select button,
+#game-over-screen button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    color: white;
+    border: 3px solid #FFD700;
+    padding: 18px 40px;
+    margin: 15px;
+    font-size: 1.3em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.faction-select button:hover,
+#game-over-screen button:hover {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000;
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#mobile-controls {
+    position: absolute;
+    bottom: 30px;
+    right: 50%;
+    transform: translateX(50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+    z-index: 1000;
+}
+
+.control-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.control-btn {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 165, 0, 0.2) 100%);
+    border: 3px solid rgba(255, 215, 0, 0.9);
+    border-radius: 12px;
+    color: white;
+    font-size: 2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.control-btn:active {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.7) 0%, rgba(255, 165, 0, 0.6) 100%);
+    transform: scale(0.92);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    border-color: #FFD700;
+}
+
+/* Mobile Responsive - Landscape Mode */
+@media (max-width: 768px) and (orientation: landscape) {
+    #game-container {
+        width: 100vw !important;
+        height: 100vh !important;
+    }
+
+    canvas {
+        width: 100vw !important;
+        height: 100vh !important;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    .faction-select button {
+        padding: 12px 20px;
+        font-size: 1em;
+        margin: 8px;
+    }
+
+    .flag-button {
+        width: 30px;
+        height: 22px;
+    }
+
+    #hud {
+        font-size: 0.9em;
+        padding: 10px;
+    }
+
+    .flag-icon {
+        width: 16px;
+        height: 12px;
+    }
+
+    #mobile-controls {
+        display: flex !important;
+    }
+}
+
+/* Mobile Portrait - Show Rotation Warning */
+@media (max-width: 768px) and (orientation: portrait) {
+    #rotate-message {
+        display: flex !important;
+    }
+
+    #game-container {
+        display: none;
+    }
+}
+
+/* Desktop - Hide Mobile Controls */
+@media (min-width: 769px) {
+    #mobile-controls {
+        display: none !important;
+    }
+}

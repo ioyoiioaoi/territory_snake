@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="screen-orientation" content="landscape">
+    <title>滿洲國領土蛇戰 (Manchukuo Territory Snake)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="rotate-message">
+        <div class="rotate-content">
+            <div class="rotate-icon">📱 ↻</div>
+            <h2>請旋轉您的裝置</h2>
+            <p>此遊戲需要橫向顯示以查看完整地圖</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Please rotate your device to landscape mode</p>
+        </div>
+    </div>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-layer">
+            <div id="hud">
+                <div id="timer" style="color: white; font-size: 1.2em; margin-bottom: 10px;">時間: 1:00</div>
+                <div class="faction-score" id="score-manchukuo" style="color: #FFD700">
+                    <img src="PIC/滿州國.png" class="flag-icon" alt="滿洲國">
+                    滿洲國: 0
+                </div>
+                <div class="faction-score" id="score-roc" style="color: #4169E1">
+                    <img src="PIC/中華民國.png" class="flag-icon" alt="中華民國">
+                    中華民國: 0
+                </div>
+                <div class="faction-score" id="score-japan" style="color: #DC143C">
+                    <img src="PIC/日本.png" class="flag-icon" alt="日本">
+                    日本: 0
+                </div>
+            </div>
+            <div id="start-screen">
+                <h1>滿洲國領土蛇戰</h1>
+                <p>選擇你的陣營</p>
+                <div class="faction-select">
+                    <button onclick="startGame('MANCHUKUO')" style="border-color: #FFD700">
+                        <img src="PIC/滿州國.png" class="flag-button" alt="滿洲國">
+                        <span>滿洲國 (速度+)</span>
+                    </button>
+                    <button onclick="startGame('ROC')" style="border-color: #4169E1">
+                        <img src="PIC/中華民國.png" class="flag-button" alt="中華民國">
+                        <span>中華民國 (成長+)</span>
+                    </button>
+                    <button onclick="startGame('JAPAN')" style="border-color: #DC143C">
+                        <img src="PIC/日本.png" class="flag-button" alt="日本">
+                        <span>日本 (攻擊+)</span>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-controls" class="hidden">
+                <div class="control-row">
+                    <button id="btn-up" class="control-btn">↑</button>
+                </div>
+                <div class="control-row">
+                    <button id="btn-left" class="control-btn">←</button>
+                    <button id="btn-down" class="control-btn">↓</button>
+                    <button id="btn-right" class="control-btn">→</button>
+                </div>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1 id="winner-text"></h1>
+                <button onclick="location.reload()">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/constants.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/snake.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
