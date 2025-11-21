@@ -7,10 +7,11 @@
 
 body {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    overflow: hidden;
+    overflow: auto;
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
@@ -178,43 +179,59 @@ h1 {
 }
 
 #mobile-controls {
-    position: absolute;
-    bottom: 30px;
-    right: 50%;
-    transform: translateX(50%);
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     pointer-events: auto;
-    z-index: 1000;
+    z-index: 20000;
+    width: 100%;
+    max-width: 300px;
 }
 
 .control-row {
     display: flex;
-    gap: 8px;
+    gap: 15px;
     justify-content: center;
+    width: 100%;
 }
 
 .control-btn {
-    width: 70px;
-    height: 70px;
+    width: 65px;
+    height: 65px;
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 165, 0, 0.2) 100%);
     border: 3px solid rgba(255, 215, 0, 0.9);
-    border-radius: 12px;
+    border-radius: 50%;
     color: white;
     font-size: 2em;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.15s ease;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.1s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
 }
 
 .control-btn:active {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.7) 0%, rgba(255, 165, 0, 0.6) 100%);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.7) 100%);
+    transform: scale(0.95);
+}
+
+/* Mobile - Add margin to game-container to prevent overlap with controls */
+@media (max-width: 768px) {
+    #game-container {
+        margin-bottom: 120px;
+        /* Adjust based on mobile controls height */
+    }
 }
 
 /* Desktop - Hide Mobile Controls */

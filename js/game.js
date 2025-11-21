@@ -78,6 +78,7 @@ class Game {
         const isMobile = window.innerWidth <= 768;
         const rotateMessage = document.getElementById('rotate-message');
         const gameContainer = document.getElementById('game-container');
+        const mobileControls = document.getElementById('mobile-controls');
 
         if (isMobile) {
             const isPortrait = window.innerHeight > window.innerWidth;
@@ -86,22 +87,28 @@ class Game {
                 // Show rotation message in portrait mode
                 if (rotateMessage) rotateMessage.style.display = 'flex';
                 if (gameContainer) gameContainer.style.display = 'none';
+                if (mobileControls) mobileControls.classList.add('hidden');
             } else {
                 // Hide rotation message in landscape mode
                 if (rotateMessage) rotateMessage.style.display = 'none';
                 if (gameContainer) gameContainer.style.display = 'block';
+                if (mobileControls) mobileControls.classList.remove('hidden');
 
                 // Set canvas size
                 this.canvas.width = CANVAS_WIDTH;
                 this.canvas.height = CANVAS_HEIGHT;
 
                 // Scale canvas to fit mobile screen with controls visible
+                // Controls take up about 160px at the bottom
+                const controlsHeight = 160;
                 const availableWidth = window.innerWidth;
-                const availableHeight = window.innerHeight - 180; // Leave space for controls
+                const availableHeight = window.innerHeight - controlsHeight;
+
                 const scaleX = availableWidth / CANVAS_WIDTH;
                 const scaleY = availableHeight / CANVAS_HEIGHT;
-                const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
+                const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 1x
 
+                // Apply scale
                 gameContainer.style.transform = `scale(${scale})`;
                 gameContainer.style.transformOrigin = 'top center';
             }
@@ -109,6 +116,8 @@ class Game {
             // Desktop - always show game, hide rotation message
             if (rotateMessage) rotateMessage.style.display = 'none';
             if (gameContainer) gameContainer.style.display = 'block';
+            if (mobileControls) mobileControls.classList.add('hidden');
+
             this.canvas.width = CANVAS_WIDTH;
             this.canvas.height = CANVAS_HEIGHT;
             gameContainer.style.transform = 'scale(1)'; // Reset scale

@@ -22,6 +22,7 @@
                 to landscape mode</p>
         </div>
     </div>
+
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div id="ui-layer">
@@ -40,6 +41,7 @@
                     日本: 0
                 </div>
             </div>
+
             <div id="start-screen">
                 <h1>滿洲國領土蛇戰</h1>
                 <p>選擇你的陣營</p>
@@ -58,20 +60,23 @@
                     </button>
                 </div>
             </div>
-            <div id="mobile-controls" class="hidden">
-                <div class="control-row">
-                    <button id="btn-up" class="control-btn">↑</button>
-                </div>
-                <div class="control-row">
-                    <button id="btn-left" class="control-btn">←</button>
-                    <button id="btn-down" class="control-btn">↓</button>
-                    <button id="btn-right" class="control-btn">→</button>
-                </div>
-            </div>
+
             <div id="game-over-screen" class="hidden">
                 <h1 id="winner-text"></h1>
                 <button onclick="location.reload()">再玩一次</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile Controls - Outside game container so they don't scale with it -->
+    <div id="mobile-controls" class="hidden">
+        <div class="control-row">
+            <button id="btn-up" class="control-btn">↑</button>
+        </div>
+        <div class="control-row">
+            <button id="btn-left" class="control-btn">←</button>
+            <button id="btn-down" class="control-btn">↓</button>
+            <button id="btn-right" class="control-btn">→</button>
         </div>
     </div>
 
