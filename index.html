@@ -43,7 +43,50 @@
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div id="ui-layer">
-            <div id="start-screen">
+            <div id="rules-screen">
+                <h1>滿洲國領土蛇戰</h1>
+                <div
+                    style="max-width: 700px; text-align: left; background: rgba(0,0,0,0.7); padding: 30px; border-radius: 15px; margin: 20px; color: white;">
+                    <h2 style="text-align: center; color: #FFD700; margin-bottom: 20px;">🎮 遊戲規則</h2>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #FFD700;">📍 基本操作：</strong>
+                        <p style="margin: 5px 0 0 20px; color: white;">• 使用方向鍵或螢幕按鈕控制蛇的移動<br>• 移動過的區域會變成你的領土</p>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #4169E1;">⚔️ 戰鬥系統：</strong>
+                        <p style="margin: 5px 0 0 20px; color: white;">• 頭對頭：戰力高者獲勝（長度 + 陣營加成）<br>•
+                            撞到蛇身：扣除5長度（長度≤1時減速10%，不死亡）</p>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #DC143C;">🔄 解放軍機制：</strong>
+                        <p style="margin: 5px 0 0 20px; color: white;">• 首次死亡：變身為解放軍（速度2倍）<br>• 保留領土和分數，重生於起點<br>•
+                            二次死亡：永久淘汰</p>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #FFA500;">⚡ 特殊能力：</strong>
+                        <p style="margin: 5px 0 0 20px; color: white;">• 🌊 台灣東南海域：進入減速50%<br>• ⚔️ 劍：無敵5秒<br>• 🇯🇵
+                            日本：撞自己不會死</p>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #90EE90;">🏆 勝利條件：</strong>
+                        <p style="margin: 5px 0 0 20px; color: white;">• 消滅所有對手<br>• 時間結束時領土最多</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button id="start-btn"
+                            style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 20px 50px; font-size: 1.5em; font-weight: bold; cursor: pointer; border-radius: 10px; box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5); transition: all 0.3s ease;">
+                            開始遊戲 🎯
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="start-screen" class="hidden">
                 <h1>滿洲國領土蛇戰</h1>
                 <p>選擇你的陣營</p>
                 <div class="faction-select">
