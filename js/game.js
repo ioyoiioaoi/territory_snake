@@ -91,9 +91,19 @@ class Game {
                 if (rotateMessage) rotateMessage.style.display = 'none';
                 if (gameContainer) gameContainer.style.display = 'block';
 
-                // Set canvas size for mobile landscape
+                // Set canvas size
                 this.canvas.width = CANVAS_WIDTH;
                 this.canvas.height = CANVAS_HEIGHT;
+
+                // Scale canvas to fit mobile screen with controls visible
+                const availableWidth = window.innerWidth;
+                const availableHeight = window.innerHeight - 180; // Leave space for controls
+                const scaleX = availableWidth / CANVAS_WIDTH;
+                const scaleY = availableHeight / CANVAS_HEIGHT;
+                const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
+
+                gameContainer.style.transform = `scale(${scale})`;
+                gameContainer.style.transformOrigin = 'top center';
             }
         } else {
             // Desktop - always show game, hide rotation message
@@ -101,9 +111,9 @@ class Game {
             if (gameContainer) gameContainer.style.display = 'block';
             this.canvas.width = CANVAS_WIDTH;
             this.canvas.height = CANVAS_HEIGHT;
+            gameContainer.style.transform = 'scale(1)'; // Reset scale
         }
     }
-
 
     start(playerFactionKey) {
         this.snakes = [];
