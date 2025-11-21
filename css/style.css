@@ -196,19 +196,19 @@ h1 {
 
 .d-pad {
     position: relative;
-    width: 150px;
-    height: 150px;
+    width: 260px;
+    height: 260px;
 }
 
 .control-btn {
     position: absolute;
-    width: 50px;
-    height: 50px;
+    width: 80px;
+    height: 80px;
     background: rgba(255, 255, 255, 0.2);
     border: 2px solid rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
+    border-radius: 15px;
     color: white;
-    font-size: 1.5em;
+    font-size: 2.5em;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -227,21 +227,21 @@ h1 {
 
 .control-btn.up {
     top: 0;
-    left: 50px;
+    left: 90px;
 }
 
 .control-btn.down {
     bottom: 0;
-    left: 50px;
+    left: 90px;
 }
 
 .control-btn.left {
-    top: 50px;
+    top: 90px;
     left: 0;
 }
 
 .control-btn.right {
-    top: 50px;
+    top: 90px;
     right: 0;
 }
 

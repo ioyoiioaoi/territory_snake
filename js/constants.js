@@ -43,33 +43,39 @@ const FACTIONS = {
 const RESOURCE_TYPES = {
     GRAIN: {
         emoji: '🌾',
-        value: 1,
+        value: 2,
         name: '糧食',
         effect: 'grow'
     },
     INDUSTRY: {
         emoji: '⚙️',
-        value: 2,
+        value: 4,
         name: '工業',
         effect: 'grow'
     },
     CITY: {
         emoji: '🏛️',
-        value: 5,
+        value: 10,
         name: '重要城市',
         effect: 'grow'
     },
     RESOURCE: {
         emoji: '💎',
-        value: 3,
+        value: 6,
         name: '礦產',
         effect: 'grow'
     },
     RAILWAY: {
         emoji: '🚂',
-        value: 2,
+        value: 4,
         name: '鐵路',
         effect: 'speed'
+    },
+    SWORD: {
+        emoji: '⚔️',
+        value: 0,
+        name: '無敵',
+        effect: 'invincible'
     }
 };
 
@@ -78,4 +84,11 @@ const DIRECTIONS = {
     DOWN: { x: 0, y: 1 },
     LEFT: { x: -1, y: 0 },
     RIGHT: { x: 1, y: 0 }
+};
+
+const TAIWAN_OCEAN_ZONE = {
+    xMin: 32,
+    xMax: 39,
+    yMin: 20,
+    yMax: 29
 };

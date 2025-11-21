@@ -1,9 +1,12 @@
 class Snake {
-    constructor(factionKey, ctx, map, isBot = false) {
-        const faction = FACTIONS[factionKey];
-        this.faction = faction;
+    constructor(factionKey, ctx, map, game, isBot = false) {
+        // Deep clone faction to avoid modifying global state
+        const factionData = FACTIONS[factionKey];
+        this.faction = JSON.parse(JSON.stringify(factionData));
+
         this.ctx = ctx;
         this.map = map;
+        this.game = game; // Store game instance
         this.isBot = isBot;
 
         this.body = [];
@@ -13,14 +16,75 @@ class Snake {
         this.alive = true;
         this.score = 0;
         this.lastMoveTime = 0;
+        this.invincibleUntil = 0; // Timestamp for invincibility
+        this.speedDebuffs = []; // Array of { factor, endTime }
+        this.isPLA = false;
 
         // Load flag image
         this.flagImage = new Image();
-        this.flagImage.src = faction.flagImage;
+        this.flagImage.src = this.faction.flagImage;
 
         // Initialize body
         for (let i = 0; i < this.length; i++) {
-            this.body.push({ x: faction.startPos.x - i, y: faction.startPos.y });
+            this.body.push({ x: this.faction.startPos.x - i, y: this.faction.startPos.y });
+        }
+    }
+
+    transformToPLA() {
+        this.isPLA = true;
+        this.faction.name = this.faction.name + " (解放軍)";
+        this.faction.flagImage = "images/flag_pla.png";
+        this.faction.speed /= 2; // Double speed (half interval)
+
+        // Reload flag image
+        this.flagImage.src = this.faction.flagImage;
+
+        // Respawn logic
+        this.body = [];
+        this.length = 5; // Reset length to avoid instant death loops
+        this.direction = DIRECTIONS.RIGHT;
+        this.nextDirection = DIRECTIONS.RIGHT;
+
+        // Reset position to start
+        for (let i = 0; i < this.length; i++) {
+            this.body.push({ x: this.faction.startPos.x - i, y: this.faction.startPos.y });
+        }
+
+        // Notify game
+        if (this.game && this.game.showNotification) {
+            this.game.showNotification("解放軍出現！");
+        }
+        console.log("Transformed to PLA!");
+    }
+
+    die() {
+        if (!this.isPLA) {
+            this.transformToPLA();
+        } else {
+            this.alive = false;
+        }
+    }
+
+    getSpeed(currentTime) {
+        // Remove expired debuffs
+        this.speedDebuffs = this.speedDebuffs.filter(d => d.endTime > currentTime);
+
+        // Calculate total slow factor
+        let totalFactor = 0;
+        this.speedDebuffs.forEach(d => totalFactor += d.factor);
+
+        // Base speed (ms per tick) * (1 + slow factor)
+        // Higher value = slower movement
+        return this.faction.speed * (1 + totalFactor);
+    }
+
+    addDebuff(factor, duration, currentTime) {
+        // Check if a similar debuff already exists to avoid stacking too aggressively
+        const existing = this.speedDebuffs.find(d => d.factor === factor && d.endTime > currentTime);
+        if (existing) {
+            existing.endTime = Math.max(existing.endTime, currentTime + duration);
+        } else {
+            this.speedDebuffs.push({ factor, endTime: currentTime + duration });
         }
     }
 
@@ -29,7 +93,7 @@ class Snake {
         this.nextDirection = newDir;
     }
 
-    update(allSnakes) {
+    update(allSnakes, currentTime) {
         if (!this.alive) return;
 
         if (this.isBot) {
@@ -49,55 +113,89 @@ class Snake {
         if (newHead.y < 0) newHead.y = MAP_HEIGHT - 1;
         if (newHead.y >= MAP_HEIGHT) newHead.y = 0;
 
+        // Map Zone Check (Taiwan Ocean)
+        if (newHead.x >= TAIWAN_OCEAN_ZONE.xMin && newHead.x <= TAIWAN_OCEAN_ZONE.xMax &&
+            newHead.y >= TAIWAN_OCEAN_ZONE.yMin && newHead.y <= TAIWAN_OCEAN_ZONE.yMax) {
+            this.addDebuff(0.5, 2000, currentTime); // 50% slow for 2 seconds (refreshes while in zone)
+        }
+
         if (this.map.isObstacle(newHead.x, newHead.y)) {
             this.die();
             return;
         }
 
+        // Self collision
         for (let part of this.body) {
             if (newHead.x === part.x && newHead.y === part.y) {
-                this.die();
+                // Japan Buff: Immune to self-collision
+                if (this.faction.id !== FACTIONS.JAPAN.id) {
+                    this.die();
+                }
                 return;
             }
         }
 
+        const isInvincible = currentTime < this.invincibleUntil;
+
         for (let otherSnake of allSnakes) {
             if (!otherSnake.alive) continue;
 
-            if (otherSnake !== this && newHead.x === otherSnake.body[0].x && newHead.y === otherSnake.body[0].y) {
-                const myPower = this.length + this.faction.attackBonus;
-                const otherPower = otherSnake.length + otherSnake.faction.attackBonus;
+            const otherIsInvincible = currentTime < otherSnake.invincibleUntil;
 
-                if (myPower > otherPower) {
+            // Head-to-Head Collision
+            if (otherSnake !== this && newHead.x === otherSnake.body[0].x && newHead.y === otherSnake.body[0].y) {
+                if (isInvincible && !otherIsInvincible) {
                     otherSnake.die();
                     this.length += Math.floor(otherSnake.length / 2);
-                } else if (myPower < otherPower) {
+                } else if (!isInvincible && otherIsInvincible) {
                     this.die();
                     otherSnake.length += Math.floor(this.length / 2);
                     return;
                 } else {
-                    this.die();
-                    otherSnake.die();
-                    return;
-                }
-            }
-
-            for (let part of otherSnake.body) {
-                if (newHead.x === part.x && newHead.y === part.y) {
+                    // Both normal or both invincible: Compare power
                     const myPower = this.length + this.faction.attackBonus;
                     const otherPower = otherSnake.length + otherSnake.faction.attackBonus;
 
                     if (myPower > otherPower) {
-                        const cutIndex = otherSnake.body.indexOf(part);
-                        if (cutIndex !== -1) {
-                            const lostLength = otherSnake.body.length - cutIndex;
-                            otherSnake.body.splice(cutIndex);
-                            otherSnake.length = otherSnake.body.length;
-                            this.length += Math.floor(lostLength / 2);
-                        }
+                        otherSnake.die();
+                        this.length += Math.floor(otherSnake.length / 2);
+                    } else if (myPower < otherPower) {
+                        this.die();
+                        otherSnake.length += Math.floor(this.length / 2);
+                        return;
                     } else {
                         this.die();
+                        otherSnake.die();
                         return;
+                    }
+                }
+            }
+
+            // Head-to-Body Collision
+            for (let part of otherSnake.body) {
+                if (newHead.x === part.x && newHead.y === part.y) {
+                    if (otherIsInvincible) {
+                        this.die(); // Die if hitting invincible snake
+                        return;
+                    } else {
+                        // Survival Rule: Lose length instead of dying
+                        const penalty = 5; // Lose 5 length
+
+                        if (this.length <= 1) {
+                            // Critical Survival: Don't die, just slow down
+                            this.addDebuff(0.1, 5000, currentTime); // 10% slow for 5 seconds
+                            // Don't return, continue moving
+                        } else {
+                            this.length = Math.max(1, this.length - penalty);
+
+                            // Cut opponent
+                            const cutIndex = otherSnake.body.indexOf(part);
+                            if (cutIndex !== -1) {
+                                const lostLength = otherSnake.body.length - cutIndex;
+                                otherSnake.body.splice(cutIndex);
+                                otherSnake.length = otherSnake.body.length;
+                            }
+                        }
                     }
                 }
             }
@@ -108,8 +206,12 @@ class Snake {
 
         const resource = this.map.checkResourceCollision(newHead.x, newHead.y);
         if (resource) {
-            this.length += (resource.value * this.faction.growthRate);
-            this.score += resource.value * 10;
+            if (resource.effect === 'invincible') {
+                this.invincibleUntil = currentTime + 5000; // 5 seconds invincibility
+            } else {
+                this.length += (resource.value * this.faction.growthRate);
+                this.score += resource.value * 10;
+            }
         }
 
         while (this.body.length > this.length) {
@@ -173,12 +275,15 @@ class Snake {
         this.nextDirection = bestMove;
     }
 
-    die() {
-        this.alive = false;
-    }
-
     draw() {
         if (!this.alive) return;
+
+        // Flashing effect if invincible
+        if (this.invincibleUntil > performance.now()) {
+            if (Math.floor(performance.now() / 100) % 2 === 0) {
+                this.ctx.globalAlpha = 0.5;
+            }
+        }
 
         this.ctx.fillStyle = this.faction.color;
         this.body.forEach((part, index) => {
@@ -194,5 +299,7 @@ class Snake {
                 );
             }
         });
+
+        this.ctx.globalAlpha = 1.0; // Reset alpha
     }
 }

@@ -58,13 +58,21 @@ class Game {
         const addControl = (btn, direction) => {
             if (btn) {
                 const handler = (e) => {
-                    e.preventDefault(); // Prevent default touch behavior
+                    e.preventDefault(); // Prevent default touch behavior and click delay
+
+                    // Haptic feedback
+                    if (navigator.vibrate) {
+                        navigator.vibrate(15);
+                    }
+
                     if (this.playerSnake && this.isRunning) {
                         this.playerSnake.setDirection(direction);
                     }
                 };
-                btn.addEventListener('touchstart', handler);
-                btn.addEventListener('click', handler);
+
+                // Use passive: false to allow preventDefault() and ensure immediate response
+                btn.addEventListener('touchstart', handler, { passive: false });
+                btn.addEventListener('mousedown', handler); // Use mousedown for faster desktop response than click
             }
         };
 
@@ -123,12 +131,12 @@ class Game {
         this.snakes = [];
         this.gameTimeRemaining = this.gameTimeLimit;
 
-        this.playerSnake = new Snake(playerFactionKey, this.ctx, this.map, false);
+        this.playerSnake = new Snake(playerFactionKey, this.ctx, this.map, this, false);
         this.snakes.push(this.playerSnake);
 
         Object.keys(FACTIONS).forEach(key => {
             if (key !== playerFactionKey) {
-                this.snakes.push(new Snake(key, this.ctx, this.map, true));
+                this.snakes.push(new Snake(key, this.ctx, this.map, this, true));
             }
         });
 
@@ -178,8 +186,8 @@ class Game {
     update(currentTime) {
         this.snakes.forEach(snake => {
             if (snake.alive) {
-                if (currentTime - snake.lastMoveTime > snake.faction.speed) {
-                    snake.update(this.snakes);
+                if (currentTime - snake.lastMoveTime > snake.getSpeed(currentTime)) {
+                    snake.update(this.snakes, currentTime);
                     snake.lastMoveTime = currentTime;
                 }
             }
@@ -204,27 +212,55 @@ class Game {
     }
 
     updateHUD() {
-        const manchukuoScore = this.map.getTerritoryCount(FACTIONS.MANCHUKUO.id);
-        const rocScore = this.map.getTerritoryCount(FACTIONS.ROC.id);
-        const japanScore = this.map.getTerritoryCount(FACTIONS.JAPAN.id);
-
-        document.getElementById('score-manchukuo').innerHTML = `
-            <img src="PIC/滿州國.png" class="flag-icon" alt="滿洲國">
-            ${FACTIONS.MANCHUKUO.name}: ${manchukuoScore}
-        `;
-        document.getElementById('score-roc').innerHTML = `
-            <img src="PIC/中華民國.png" class="flag-icon" alt="中華民國">
-            ${FACTIONS.ROC.name}: ${rocScore}
-        `;
-        document.getElementById('score-japan').innerHTML = `
-            <img src="PIC/日本.png" class="flag-icon" alt="日本">
-            ${FACTIONS.JAPAN.name}: ${japanScore}
-        `;
+        this.snakes.forEach(snake => {
+            const scoreElement = document.getElementById(`score-${snake.faction.id === 1 ? 'manchukuo' : snake.faction.id === 2 ? 'roc' : 'japan'}`);
+            if (scoreElement) {
+                const territoryCount = this.map.getTerritoryCount(snake.faction.id);
+                scoreElement.innerHTML = `
+                    <img src="${snake.faction.flagImage}" class="flag-icon" alt="${snake.faction.name}">
+                    ${snake.faction.name}: ${territoryCount}
+                `;
+            }
+        });
 
         // Update timer display
         const minutes = Math.floor(this.gameTimeRemaining / 60);
         const seconds = this.gameTimeRemaining % 60;
         document.getElementById('timer').innerText = `時間: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    showNotification(text) {
+        const notification = document.createElement('div');
+        notification.innerText = text;
+        notification.style.position = 'absolute';
+        notification.style.top = '20%';
+        notification.style.left = '50%';
+        notification.style.transform = 'translate(-50%, -50%)';
+        notification.style.background = 'rgba(255, 0, 0, 0.8)';
+        notification.style.color = 'white';
+        notification.style.padding = '20px 40px';
+        notification.style.fontSize = '2em';
+        notification.style.borderRadius = '10px';
+        notification.style.zIndex = '10000';
+        notification.style.animation = 'fadeInOut 3s forwards';
+
+        // Add keyframes if not exists (simple fade)
+        if (!document.getElementById('notification-style')) {
+            const style = document.createElement('style');
+            style.id = 'notification-style';
+            style.innerHTML = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translate(-50%, -60%); }
+                    10% { opacity: 1; transform: translate(-50%, -50%); }
+                    90% { opacity: 1; transform: translate(-50%, -50%); }
+                    100% { opacity: 0; transform: translate(-50%, -40%); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
     }
 
     timeUp() {
@@ -247,6 +283,20 @@ class Game {
     gameOver(win) {
         this.isRunning = false;
         document.getElementById('game-over-screen').classList.remove('hidden');
-        document.getElementById('winner-text').innerText = win ? "勝利！" : "失敗！";
+
+        let message = "遊戲結束";
+        if (win) {
+            message = `${this.playerSnake.faction.name} 勝利！`;
+        } else {
+            // Find if anyone else won (only one survivor)
+            const survivors = this.snakes.filter(s => s.alive);
+            if (survivors.length === 1) {
+                message = `${survivors[0].faction.name} 勝利！`;
+            } else {
+                message = "你輸了！";
+            }
+        }
+
+        document.getElementById('winner-text').innerText = message;
     }
 }

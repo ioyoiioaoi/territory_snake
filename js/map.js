@@ -28,16 +28,18 @@ class GameMap {
         const rand = Math.random();
         let type;
 
-        if (rand > 0.92) {
+        if (rand > 0.95) {
+            type = RESOURCE_TYPES.SWORD; // 5% 无敌剑
+        } else if (rand > 0.87) {
             type = RESOURCE_TYPES.CITY; // 8% 重要城市
-        } else if (rand > 0.82) {
+        } else if (rand > 0.77) {
             type = RESOURCE_TYPES.RESOURCE; // 10% 矿产
-        } else if (rand > 0.67) {
+        } else if (rand > 0.62) {
             type = RESOURCE_TYPES.RAILWAY; // 15% 铁路
-        } else if (rand > 0.45) {
+        } else if (rand > 0.40) {
             type = RESOURCE_TYPES.INDUSTRY; // 22% 工业
         } else {
-            type = RESOURCE_TYPES.GRAIN; // 45% 粮食
+            type = RESOURCE_TYPES.GRAIN; // 40% 粮食
         }
 
         this.resources.push({ x, y, type });
