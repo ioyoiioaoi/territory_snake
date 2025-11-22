@@ -300,6 +300,9 @@ class Game {
 
         document.getElementById('game-over-screen').classList.remove('hidden');
         document.getElementById('winner-text').innerText = `時間到！${winner.faction.name} 勝利！`;
+
+        // Generate report for time-up scenario
+        this.generateReport();
     }
 
     logEvent(type, data) {
@@ -569,9 +572,15 @@ class Game {
         const { type, data } = event;
         switch (type) {
             case 'death':
+                if (data.killedBy) {
+                    return `💀 ${data.faction} 被 ${data.killedBy} 擊敗在 (${data.location.x}, ${data.location.y})，轉化為解放軍`;
+                }
                 return `💀 ${data.faction} 在 (${data.location.x}, ${data.location.y}) 死亡，轉化為解放軍`;
             case 'eliminated':
-                return `☠️  ${data.faction} 在 (${data.location.x}, ${data.location.y}) 被徹底淘汰`;
+                if (data.killedBy) {
+                    return `☠️ ${data.faction} 被 ${data.killedBy} 殲滅在 (${data.location.x}, ${data.location.y})`;
+                }
+                return `☠️ ${data.faction} 在 (${data.location.x}, ${data.location.y}) 被徹底淘汰`;
             case 'transformation':
                 return `🔄 ${data.faction} 在 (${data.location.x}, ${data.location.y}) 變身為解放軍`;
             case 'restoration':

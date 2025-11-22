@@ -97,23 +97,25 @@ class Snake {
         console.log("Restored from PLA!");
     }
 
-    die() {
+    die(killedBy = null) {
         if (!this.isPLA) {
-            // Log death event
+            // Log death event with killer info
             if (this.game && this.game.logEvent) {
                 this.game.logEvent('death', {
                     faction: FACTIONS[this.originalFactionKey].name,
                     location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 },
+                    killedBy: killedBy ? FACTIONS[killedBy.originalFactionKey].name : '未知',
                     becamePLA: true
                 });
             }
             this.transformToPLA();
         } else {
-            // Log final death
+            // Log final death with killer info
             if (this.game && this.game.logEvent) {
                 this.game.logEvent('eliminated', {
                     faction: FACTIONS[this.originalFactionKey].name,
-                    location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 }
+                    location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 },
+                    killedBy: killedBy ? FACTIONS[killedBy.originalFactionKey].name : '未知'
                 });
             }
             this.alive = false;
@@ -211,7 +213,7 @@ class Snake {
         }
 
         if (this.map.isObstacle(newHead.x, newHead.y)) {
-            this.die();
+            this.die(); // No killer for obstacle collision
             return;
         }
 
@@ -220,7 +222,7 @@ class Snake {
             if (newHead.x === part.x && newHead.y === part.y) {
                 // Japan Buff: Immune to self-collision
                 if (this.faction.id !== FACTIONS.JAPAN.id) {
-                    this.die();
+                    this.die(); // Self-kill
                 }
                 return;
             }
@@ -236,10 +238,10 @@ class Snake {
             // Head-to-Head Collision
             if (otherSnake !== this && newHead.x === otherSnake.body[0].x && newHead.y === otherSnake.body[0].y) {
                 if (isInvincible && !otherIsInvincible) {
-                    otherSnake.die();
+                    otherSnake.die(this);
                     this.length += Math.floor(otherSnake.length / 2);
                 } else if (!isInvincible && otherIsInvincible) {
-                    this.die();
+                    this.die(otherSnake);
                     otherSnake.length += Math.floor(this.length / 2);
                     return;
                 } else {
@@ -248,15 +250,15 @@ class Snake {
                     const otherPower = otherSnake.length + otherSnake.faction.attackBonus;
 
                     if (myPower > otherPower) {
-                        otherSnake.die();
+                        otherSnake.die(this);
                         this.length += Math.floor(otherSnake.length / 2);
                     } else if (myPower < otherPower) {
-                        this.die();
+                        this.die(otherSnake);
                         otherSnake.length += Math.floor(this.length / 2);
                         return;
                     } else {
-                        this.die();
-                        otherSnake.die();
+                        this.die(otherSnake);
+                        otherSnake.die(this);
                         return;
                     }
                 }
@@ -266,7 +268,7 @@ class Snake {
             for (let part of otherSnake.body) {
                 if (newHead.x === part.x && newHead.y === part.y) {
                     if (otherIsInvincible) {
-                        this.die(); // Die if hitting invincible snake
+                        this.die(otherSnake); // Die if hitting invincible snake
                         return;
                     } else {
                         // Survival Rule: Lose length instead of dying
