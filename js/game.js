@@ -570,21 +570,23 @@ class Game {
 
     getEventMessage(event) {
         const { type, data } = event;
+        const location = getLocationName(data.location.x, data.location.y);
+
         switch (type) {
             case 'death':
                 if (data.killedBy) {
-                    return `💀 ${data.faction} 被 ${data.killedBy} 擊敗在 (${data.location.x}, ${data.location.y})，轉化為解放軍`;
+                    return `💀 ${data.faction} 被 ${data.killedBy} 擊敗於 ${location}，轉化為解放軍`;
                 }
-                return `💀 ${data.faction} 在 (${data.location.x}, ${data.location.y}) 死亡，轉化為解放軍`;
+                return `💀 ${data.faction} 於 ${location} 死亡，轉化為解放軍`;
             case 'eliminated':
                 if (data.killedBy) {
-                    return `☠️ ${data.faction} 被 ${data.killedBy} 殲滅在 (${data.location.x}, ${data.location.y})`;
+                    return `☠️ ${data.faction} 被 ${data.killedBy} 殲滅於 ${location}`;
                 }
-                return `☠️ ${data.faction} 在 (${data.location.x}, ${data.location.y}) 被徹底淘汰`;
+                return `☠️ ${data.faction} 於 ${location} 被徹底淘汰`;
             case 'transformation':
-                return `🔄 ${data.faction} 在 (${data.location.x}, ${data.location.y}) 變身為解放軍`;
+                return `🔄 ${data.faction} 於 ${location} 變身為解放軍`;
             case 'restoration':
-                return `🏛️ ${data.faction} 在 (${data.location.x}, ${data.location.y}) 恢復政府狀態`;
+                return `🏛️ ${data.faction} 於 ${location} 恢復政府狀態`;
             default:
                 return `${type}: ${JSON.stringify(data)}`;
         }
