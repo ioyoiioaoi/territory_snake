@@ -30,7 +30,12 @@ class GameMap {
                 // Spawn government symbol if not already a resource here
                 const hasResource = this.resources.some(r => r.x === x && r.y === y);
                 if (!hasResource) {
-                    this.resources.push({ x, y, type: RESOURCE_TYPES.GOVERNMENT });
+                    this.resources.push({
+                        x,
+                        y,
+                        type: RESOURCE_TYPES.GOVERNMENT,
+                        activationCount: 0  // Needs to be stepped on twice
+                    });
                 }
             }
         }
@@ -97,6 +102,17 @@ class GameMap {
         for (let i = 0; i < this.resources.length; i++) {
             const res = this.resources[i];
             if (res.x === headX && res.y === headY) {
+                // Special handling for government symbols
+                if (res.type.effect === 'restore') {
+                    if (res.activationCount === undefined || res.activationCount < 1) {
+                        // First step: activate but don't collect
+                        res.activationCount = (res.activationCount || 0) + 1;
+                        return null; // Not collected yet
+                    }
+                    // Second step: can be collected
+                }
+
+                // Collect the resource
                 this.resources.splice(i, 1);
                 return res.type;
             }

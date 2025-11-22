@@ -104,7 +104,7 @@ class Snake {
                 this.game.logEvent('death', {
                     faction: FACTIONS[this.originalFactionKey].name,
                     location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 },
-                    killedBy: killedBy ? FACTIONS[killedBy.originalFactionKey].name : '未知',
+                    killedBy: killedBy ? FACTIONS[killedBy.originalFactionKey].name : '内乱',
                     becamePLA: true
                 });
             }
@@ -115,7 +115,7 @@ class Snake {
                 this.game.logEvent('eliminated', {
                     faction: FACTIONS[this.originalFactionKey].name,
                     location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 },
-                    killedBy: killedBy ? FACTIONS[killedBy.originalFactionKey].name : '未知'
+                    killedBy: killedBy ? FACTIONS[killedBy.originalFactionKey].name : '内乱'
                 });
             }
             this.alive = false;
