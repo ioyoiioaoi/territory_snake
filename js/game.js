@@ -17,6 +17,12 @@ class Game {
         this.lastTime = 0;
         this.accumulator = 0;
 
+        // Game statistics tracking
+        this.gameEvents = []; // Track all game events
+        this.territoryHistory = []; // Track territory over time
+        this.lastSnapshotTime = 0;
+        this.gameStartTime = 0;
+
         // Game timer (1 minute = 60 seconds)
         this.gameTimeLimit = 60;
         this.gameTimeRemaining = 60;
@@ -143,6 +149,10 @@ class Game {
         this.isRunning = true;
         this.lastTime = performance.now();
         this.lastTimerUpdate = performance.now();
+        this.gameStartTime = performance.now();
+        this.lastSnapshotTime = performance.now();
+        this.gameEvents = [];
+        this.territoryHistory = [];
 
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
@@ -184,6 +194,19 @@ class Game {
     }
 
     update(currentTime) {
+        // Take territory snapshot every 2 seconds
+        if (currentTime - this.lastSnapshotTime >= 2000) {
+            const snapshot = {
+                time: Math.floor((currentTime - this.gameStartTime) / 1000),
+                territories: {}
+            };
+            this.snakes.forEach(snake => {
+                snapshot.territories[snake.faction.name] = this.map.getTerritoryCount(snake.faction.id);
+            });
+            this.territoryHistory.push(snapshot);
+            this.lastSnapshotTime = currentTime;
+        }
+
         this.snakes.forEach(snake => {
             if (snake.alive) {
                 if (currentTime - snake.lastMoveTime > snake.getSpeed(currentTime)) {
@@ -279,8 +302,23 @@ class Game {
         document.getElementById('winner-text').innerText = `時間到！${winner.faction.name} 勝利！`;
     }
 
+    logEvent(type, data) {
+        const gameTime = Math.floor((performance.now() - this.gameStartTime) / 1000);
+        this.gameEvents.push({
+            time: gameTime,
+            type: type,
+            data: data
+        });
+    }
+
     gameOver(win) {
         this.isRunning = false;
+
+        // Generate final report
+        this.showGameReport(win);
+    }
+
+    showGameReport(win) {
         document.getElementById('game-over-screen').classList.remove('hidden');
 
         let message = "遊戲結束";
@@ -292,10 +330,254 @@ class Game {
             if (survivors.length === 1) {
                 message = `${survivors[0].faction.name} 勝利！`;
             } else {
-                message = "你輸了！";
+                message = "你輸了";
             }
         }
 
         document.getElementById('winner-text').innerText = message;
+
+        // Generate and display report
+        this.generateReport();
+    }
+
+    generateReport() {
+        // Create report container
+        const reportDiv = document.createElement('div');
+        reportDiv.id = 'game-report';
+        reportDiv.style.cssText = `
+            max-width: 800px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            color: white;
+        `;
+
+        // Title
+        const title = document.createElement('h2');
+        title.innerText = '📊 游戲統計報表';
+        title.style.textAlign = 'center';
+        title.style.color = '#FFD700';
+        reportDiv.appendChild(title);
+
+        // Territory trend chart
+        this.generateTerritoryChart(reportDiv);
+
+        // Event timeline
+        this.generateEventTimeline(reportDiv);
+
+        // Append to game over screen
+        const gameOverScreen = document.getElementById('game-over-screen');
+        gameOverScreen.appendChild(reportDiv);
+    }
+
+    generateTerritoryChart(container) {
+        const chartSection = document.createElement('div');
+        chartSection.style.marginBottom = '30px';
+
+        const chartTitle = document.createElement('h3');
+        chartTitle.innerText = '📈 領土變化趨勢';
+        chartTitle.style.color = '#4169E1';
+        chartSection.appendChild(chartTitle);
+
+        // Create canvas for chart
+        const canvas = document.createElement('canvas');
+        canvas.width = 760;
+        canvas.height = 300;
+        canvas.style.background = 'rgba(255, 255, 255, 0.1)';
+        canvas.style.borderRadius = '5px';
+        chartSection.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+
+        // Draw chart
+        if (this.territoryHistory.length > 0) {
+            const padding = 40;
+            const chartWidth = canvas.width - padding * 2;
+            const chartHeight = canvas.height - padding * 2;
+
+            // Find max territory value
+            let maxTerritory = 0;
+            this.territoryHistory.forEach(snapshot => {
+                Object.values(snapshot.territories).forEach(value => {
+                    maxTerritory = Math.max(maxTerritory, value);
+                });
+            });
+            maxTerritory = Math.max(maxTerritory, 100); // Min scale
+
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+
+                // Y-axis labels
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'right';
+                const value = Math.floor(maxTerritory * (1 - i / 5));
+                ctx.fillText(value.toString(), padding - 5, y + 4);
+            }
+
+            // Draw lines for each faction
+            const factions = {};
+            this.snakes.forEach(snake => {
+                const key = snake.faction.name;
+                factions[FACTIONS[snake.originalFactionKey].name] = {
+                    color: FACTIONS[snake.originalFactionKey].color,
+                    data: []
+                };
+            });
+
+            // Collect data points
+            this.territoryHistory.forEach((snapshot, index) => {
+                Object.keys(factions).forEach(factionName => {
+                    const baseNames = Object.keys(snapshot.territories);
+                    // Find matching faction (handling PLA suffix)
+                    let territory = 0;
+                    baseNames.forEach(name => {
+                        if (name === factionName || name.startsWith(factionName)) {
+                            territory = snapshot.territories[name] || 0;
+                        }
+                    });
+                    factions[factionName].data.push({
+                        x: padding + (chartWidth / Math.max(this.territoryHistory.length - 1, 1)) * index,
+                        y: padding + chartHeight - (territory / maxTerritory) * chartHeight,
+                        value: territory
+                    });
+                });
+            });
+
+            // Draw faction lines
+            Object.keys(factions).forEach(factionName => {
+                const faction = factions[factionName];
+                ctx.strokeStyle = faction.color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+
+                faction.data.forEach((point, index) => {
+                    if (index === 0) {
+                        ctx.moveTo(point.x, point.y);
+                    } else {
+                        ctx.lineTo(point.x, point.y);
+                    }
+                });
+                ctx.stroke();
+
+                // Draw dots at data points
+                ctx.fillStyle = faction.color;
+                faction.data.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+
+            // X-axis labels (time)
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            [0, 0.25, 0.5, 0.75, 1].forEach(fraction => {
+                const x = padding + chartWidth * fraction;
+                const index = Math.floor((this.territoryHistory.length - 1) * fraction);
+                if (this.territoryHistory[index]) {
+                    ctx.fillText(`${this.territoryHistory[index].time}s`, x, canvas.height - 10);
+                }
+            });
+
+            // Legend
+            let legendY = padding - 10;
+            Object.keys(factions).forEach(factionName => {
+                ctx.fillStyle = factions[factionName].color;
+                ctx.fillRect(canvas.width - padding - 120, legendY, 15, 15);
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'left';
+                ctx.fillText(factionName, canvas.width - padding - 100, legendY + 12);
+                legendY += 20;
+            });
+        }
+
+        container.appendChild(chartSection);
+    }
+
+    generateEventTimeline(container) {
+        const timelineSection = document.createElement('div');
+        timelineSection.style.marginBottom = '20px';
+
+        const timelineTitle = document.createElement('h3');
+        timelineTitle.innerText = '⚔️ 重要事件時間線';
+        timelineTitle.style.color = '#DC143C';
+        timelineSection.appendChild(timelineTitle);
+
+        const timeline = document.createElement('div');
+        timeline.style.cssText = `
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+        `;
+
+        if (this.gameEvents.length === 0) {
+            timeline.innerText = '沒有記錄到特殊事件';
+        } else {
+            this.gameEvents.forEach(event => {
+                const eventDiv = document.createElement('div');
+                eventDiv.style.cssText = `
+                    padding: 8px;
+                    margin-bottom: 5px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-left: 3px solid ${this.getEventColor(event.type)};
+                    border-radius: 3px;
+                `;
+
+                const timeSpan = document.createElement('span');
+                timeSpan.style.cssText = 'color: #FFD700; font-weight: bold; margin-right: 10px;';
+                timeSpan.innerText = `[${event.time}s]`;
+
+                const messageSpan = document.createElement('span');
+                messageSpan.innerText = this.getEventMessage(event);
+
+                eventDiv.appendChild(timeSpan);
+                eventDiv.appendChild(messageSpan);
+                timeline.appendChild(eventDiv);
+            });
+        }
+
+        timelineSection.appendChild(timeline);
+        container.appendChild(timelineSection);
+    }
+
+    getEventColor(type) {
+        const colors = {
+            'death': '#FFA500',
+            'eliminated': '#DC143C',
+            'transformation': '#FFD700',
+            'restoration': '#90EE90'
+        };
+        return colors[type] || '#FFFFFF';
+    }
+
+    getEventMessage(event) {
+        const { type, data } = event;
+        switch (type) {
+            case 'death':
+                return `💀 ${data.faction} 在 (${data.location.x}, ${data.location.y}) 死亡，轉化為解放軍`;
+            case 'eliminated':
+                return `☠️  ${data.faction} 在 (${data.location.x}, ${data.location.y}) 被徹底淘汰`;
+            case 'transformation':
+                return `🔄 ${data.faction} 在 (${data.location.x}, ${data.location.y}) 變身為解放軍`;
+            case 'restoration':
+                return `🏛️ ${data.faction} 在 (${data.location.x}, ${data.location.y}) 恢復政府狀態`;
+            default:
+                return `${type}: ${JSON.stringify(data)}`;
+        }
     }
 }

@@ -53,6 +53,14 @@ class Snake {
             this.body.push({ x: this.faction.startPos.x - i, y: this.faction.startPos.y });
         }
 
+        // Log event
+        if (this.game && this.game.logEvent) {
+            this.game.logEvent('transformation', {
+                faction: FACTIONS[this.originalFactionKey].name,
+                location: { x: this.faction.startPos.x, y: this.faction.startPos.y }
+            });
+        }
+
         // Notify game
         if (this.game && this.game.showNotification) {
             this.game.showNotification("解放軍出現！");
@@ -74,6 +82,14 @@ class Snake {
         // Reload flag image
         this.flagImage.src = this.faction.flagImage;
 
+        // Log event
+        if (this.game && this.game.logEvent) {
+            this.game.logEvent('restoration', {
+                faction: originalFaction.name,
+                location: { x: this.body[0].x, y: this.body[0].y }
+            });
+        }
+
         // Notify game
         if (this.game && this.game.showNotification) {
             this.game.showNotification("恢復政府！");
@@ -83,8 +99,23 @@ class Snake {
 
     die() {
         if (!this.isPLA) {
+            // Log death event
+            if (this.game && this.game.logEvent) {
+                this.game.logEvent('death', {
+                    faction: FACTIONS[this.originalFactionKey].name,
+                    location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 },
+                    becamePLA: true
+                });
+            }
             this.transformToPLA();
         } else {
+            // Log final death
+            if (this.game && this.game.logEvent) {
+                this.game.logEvent('eliminated', {
+                    faction: FACTIONS[this.originalFactionKey].name,
+                    location: { x: this.body[0]?.x || 0, y: this.body[0]?.y || 0 }
+                });
+            }
             this.alive = false;
         }
     }
