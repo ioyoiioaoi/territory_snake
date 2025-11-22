@@ -54,7 +54,7 @@ const RESOURCE_TYPES = {
         effect: 'grow'
     },
     CITY: {
-        emoji: '🏛️',
+        emoji: '🏙️',
         value: 10,
         name: '重要城市',
         effect: 'grow'
@@ -76,6 +76,12 @@ const RESOURCE_TYPES = {
         value: 0,
         name: '無敵',
         effect: 'invincible'
+    },
+    GOVERNMENT: {
+        emoji: '🏛️',
+        value: 10,
+        name: '政府',
+        effect: 'restore'
     }
 };
 
@@ -92,3 +98,18 @@ const TAIWAN_OCEAN_ZONE = {
     yMin: 20,
     yMax: 29
 };
+
+const JAPAN_KOREA_SEA_ZONE = {
+    xMin: 35,
+    xMax: 39,
+    yMin: 0,
+    yMax: 15
+};
+
+// Teleport spawn points for Japan invincibility
+const TELEPORT_LOCATIONS = [
+    { x: 32, y: 22, name: '台灣' },  // Taiwan
+    { x: 38, y: 8, name: '日本' },   // Japan area
+    { x: 36, y: 3, name: '韓國' }    // Korea area
+];
+

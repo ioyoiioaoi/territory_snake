@@ -19,6 +19,9 @@ class Snake {
         this.invincibleUntil = 0; // Timestamp for invincibility
         this.speedDebuffs = []; // Array of { factor, endTime }
         this.isPLA = false;
+        this.originalFactionKey = factionKey; // Store original faction key
+        this.lastAutoGrowTime = 0; // For ROC auto-growth
+        this.lastJapanBuffTime = 0; // For Japan periodic invincibility
 
         // Load flag image
         this.flagImage = new Image();
@@ -55,6 +58,27 @@ class Snake {
             this.game.showNotification("解放軍出現！");
         }
         console.log("Transformed to PLA!");
+    }
+
+    restoreFromPLA() {
+        if (!this.isPLA) return;
+
+        this.isPLA = false;
+
+        // Restore original faction data
+        const originalFaction = FACTIONS[this.originalFactionKey];
+        this.faction.name = originalFaction.name;
+        this.faction.flagImage = originalFaction.flagImage;
+        this.faction.speed = originalFaction.speed;
+
+        // Reload flag image
+        this.flagImage.src = this.faction.flagImage;
+
+        // Notify game
+        if (this.game && this.game.showNotification) {
+            this.game.showNotification("恢復政府！");
+        }
+        console.log("Restored from PLA!");
     }
 
     die() {
@@ -94,6 +118,34 @@ class Snake {
     }
 
     update(allSnakes, currentTime) {
+        // ROC auto-growth: grow 1 length per second
+        if (this.originalFactionKey === 'ROC' && this.alive) {
+            if (currentTime - this.lastAutoGrowTime >= 1000) {
+                this.length += 1;
+                this.lastAutoGrowTime = currentTime;
+            }
+        }
+
+        // Japan periodic invincibility: every 20 seconds
+        if (this.originalFactionKey === 'JAPAN' && this.alive) {
+            if (currentTime - this.lastJapanBuffTime >= 20000) {
+                this.invincibleUntil = currentTime + 5000; // 5 seconds invincibility
+                this.lastJapanBuffTime = currentTime;
+
+                // Teleport to random location (Taiwan, Japan, or Korea)
+                const teleportLocation = TELEPORT_LOCATIONS[Math.floor(Math.random() * TELEPORT_LOCATIONS.length)];
+                this.body = [];
+                this.direction = DIRECTIONS.RIGHT;
+                this.nextDirection = DIRECTIONS.RIGHT;
+                for (let i = 0; i < this.length; i++) {
+                    this.body.push({ x: teleportLocation.x - i, y: teleportLocation.y });
+                }
+
+                if (this.game && this.game.showNotification) {
+                    this.game.showNotification(`日本獲得無敵狀態！傳送至${teleportLocation.name}`);
+                }
+            }
+        }
         if (!this.alive) return;
 
         if (this.isBot) {
@@ -117,6 +169,14 @@ class Snake {
         if (newHead.x >= TAIWAN_OCEAN_ZONE.xMin && newHead.x <= TAIWAN_OCEAN_ZONE.xMax &&
             newHead.y >= TAIWAN_OCEAN_ZONE.yMin && newHead.y <= TAIWAN_OCEAN_ZONE.yMax) {
             this.addDebuff(0.5, 2000, currentTime); // 50% slow for 2 seconds (refreshes while in zone)
+        }
+
+        // Map Zone Check (Japan/Korea Sea) - Japan is immune
+        if (this.originalFactionKey !== 'JAPAN') {
+            if (newHead.x >= JAPAN_KOREA_SEA_ZONE.xMin && newHead.x <= JAPAN_KOREA_SEA_ZONE.xMax &&
+                newHead.y >= JAPAN_KOREA_SEA_ZONE.yMin && newHead.y <= JAPAN_KOREA_SEA_ZONE.yMax) {
+                this.addDebuff(0.1, 2000, currentTime); // 10% slow for 2 seconds
+            }
         }
 
         if (this.map.isObstacle(newHead.x, newHead.y)) {
@@ -208,6 +268,11 @@ class Snake {
         if (resource) {
             if (resource.effect === 'invincible') {
                 this.invincibleUntil = currentTime + 5000; // 5 seconds invincibility
+            } else if (resource.effect === 'restore') {
+                // Government symbol: restore from PLA and add 10 length
+                this.restoreFromPLA();
+                this.length += 10;
+                this.score += resource.value * 10;
             } else {
                 this.length += (resource.value * this.faction.growthRate);
                 this.score += resource.value * 10;
