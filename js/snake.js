@@ -287,6 +287,14 @@ class Snake {
                                 const lostLength = otherSnake.body.length - cutIndex;
                                 otherSnake.body.splice(cutIndex);
                                 otherSnake.length = otherSnake.body.length;
+
+                                // Special penalty for Manchukuo
+                                if (otherSnake.originalFactionKey === 'MANCHUKUO') {
+                                    // Attacker gains the lost length
+                                    this.length += lostLength;
+                                    // Manchukuo gets 50% slow for 5 seconds
+                                    otherSnake.addDebuff(0.5, 5000, currentTime);
+                                }
                             }
                         }
                     }

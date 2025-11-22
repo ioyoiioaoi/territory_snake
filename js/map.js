@@ -2,6 +2,7 @@ class GameMap {
     constructor(ctx) {
         this.ctx = ctx;
         this.grid = [];
+        this.visitedBy = []; // Track which factions visited each tile
         this.resources = [];
         this.initGrid();
     }
@@ -9,8 +10,10 @@ class GameMap {
     initGrid() {
         for (let x = 0; x < MAP_WIDTH; x++) {
             this.grid[x] = [];
+            this.visitedBy[x] = [];
             for (let y = 0; y < MAP_HEIGHT; y++) {
                 this.grid[x][y] = 0;
+                this.visitedBy[x][y] = new Set(); // Set of faction IDs that visited this tile
             }
         }
     }
@@ -18,6 +21,18 @@ class GameMap {
     updateTerritory(x, y, factionId) {
         if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
             this.grid[x][y] = factionId;
+
+            // Track visitation
+            this.visitedBy[x][y].add(factionId);
+
+            // Check if all 3 factions have visited this tile
+            if (this.visitedBy[x][y].size === 3) {
+                // Spawn government symbol if not already a resource here
+                const hasResource = this.resources.some(r => r.x === x && r.y === y);
+                if (!hasResource) {
+                    this.resources.push({ x, y, type: RESOURCE_TYPES.GOVERNMENT });
+                }
+            }
         }
     }
 
@@ -29,18 +44,19 @@ class GameMap {
         let type;
 
         if (rand > 0.95) {
-            type = RESOURCE_TYPES.SWORD; // 5% 无敌剑
+            type = RESOURCE_TYPES.SWORD; // 5% sword
         } else if (rand > 0.87) {
-            type = RESOURCE_TYPES.CITY; // 8% 重要城市
+            type = RESOURCE_TYPES.CITY; // 8% city
         } else if (rand > 0.77) {
-            type = RESOURCE_TYPES.RESOURCE; // 10% 矿产
+            type = RESOURCE_TYPES.RESOURCE; // 10% mineral
         } else if (rand > 0.62) {
-            type = RESOURCE_TYPES.RAILWAY; // 15% 铁路
+            type = RESOURCE_TYPES.RAILWAY; // 15% railway
         } else if (rand > 0.40) {
-            type = RESOURCE_TYPES.INDUSTRY; // 22% 工业
+            type = RESOURCE_TYPES.INDUSTRY; // 22% industry
         } else {
-            type = RESOURCE_TYPES.GRAIN; // 40% 粮食
+            type = RESOURCE_TYPES.GRAIN; // 40% grain
         }
+        // Note: GOVERNMENT type is NOT randomly spawned, only appears on tiles visited by all 3 factions
 
         this.resources.push({ x, y, type });
     }
